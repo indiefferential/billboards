@@ -5,132 +5,137 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Billboard World Monitor</title>
 <style>
-  :root{
-    --accent:#00d1ff;
+  :root {
+    --accent: #00d1ff;
     --glass-border: rgba(255,255,255,0.12);
     --text: #e9f8ff;
     --muted: rgba(233,248,255,0.75);
     --shadow: 0 8px 30px rgba(0,0,0,0.45);
   }
-  html,body{height:100%;margin:0;font-family:Inter,Segoe UI,Roboto,system-ui,-apple-system,"Helvetica Neue",Arial;}
-  body{
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    background:linear-gradient(180deg,#081021 0%, #0b1320 60%);
-    color:var(--text);
-    overflow:hidden;
+  html, body {
+    height: 100%;
+    margin: 0;
+    font-family: Inter,Segoe UI,Roboto,system-ui,-apple-system,"Helvetica Neue",Arial;
+    background: linear-gradient(180deg,#081021 0%, #0b1320 60%);
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
-  .wrap{
-    width:min(1200px,95vw);
-    height:min(720px,85vh);
-    position:relative;
-    border-radius:14px;
-    overflow:hidden;
-    box-shadow:var(--shadow);
+  .wrap {
+    width: min(1200px, 95vw);
+    aspect-ratio: 2 / 1; /* fixed ratio for world map */
+    position: relative;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
     background: #071021;
   }
-  .map{
-    position:absolute;
-    inset:0;
-    background-image: url("https://upload.wikimedia.org/wikipedia/commons/8/80/World_map_-_low_resolution.svg");
-    background-color:#072033;
-    background-position:center;
-    background-size:cover;
+  .map {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
     filter: contrast(1.05) saturate(0.85) brightness(0.95);
   }
-  .map::after{
-    content:"";
-    position:absolute; inset:0;
+  .map-overlay {
+    position: absolute;
+    inset: 0;
     background: linear-gradient(180deg, rgba(2,6,12,0.15), rgba(0,0,0,0.35));
-    pointer-events:none;
+    pointer-events: none;
   }
-  .screen{
-    position:absolute;
-    left:50%;
-    top:70%;
-    transform:translateX(-50%);
-    width:min(92%, 980px);
-    height:90px;
-    border-radius:12px;
-    padding:12px 18px;
-    display:flex;
-    flex-direction:column;
-    justify-content:center;
-    gap:8px;
+  .screen {
+    position: absolute;
+    left: 50%;
+    bottom: 5%;
+    transform: translateX(-50%);
+    width: min(92%, 980px);
+    height: 90px;
+    border-radius: 12px;
+    padding: 12px 18px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 8px;
     background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
-    border:1px solid var(--glass-border);
+    border: 1px solid var(--glass-border);
     box-shadow: 0 6px 20px rgba(2,10,20,0.5), inset 0 1px rgba(255,255,255,0.02);
     backdrop-filter: blur(6px) saturate(1.1);
   }
-  .row{
-    display:flex;
-    align-items:center;
-    gap:8px;
+  .row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
   }
-  .led{
-    width:10px;height:10px;border-radius:50%;
+  .led {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
     background: linear-gradient(145deg,var(--accent), #00a6d6);
     box-shadow: 0 0 10px rgba(0,209,255,0.28);
-    flex-shrink:0;
+    flex-shrink: 0;
   }
-  .label{
-    font-size:12px;
-    color:var(--muted);
-    min-width:50px;
-    text-transform:uppercase;
-    letter-spacing:1px;
+  .label {
+    font-size: 12px;
+    color: var(--muted);
+    min-width: 50px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
   }
-  .ticker-viewport{
-    overflow:hidden;
-    flex:1;
+  .ticker-viewport {
+    overflow: hidden;
+    flex: 1;
   }
-  .ticker-line{
-    display:inline-block;
-    white-space:nowrap;
+  .ticker-line {
+    display: inline-block;
+    white-space: nowrap;
     animation: scroll-left 20s linear infinite;
   }
-  .ticker-item{
-    font-weight:600;
-    font-size:16px;
-    padding-right:40px;
-    display:inline-block;
-    color:var(--text);
+  .ticker-item {
+    font-weight: 600;
+    font-size: 16px;
+    padding-right: 40px;
+    display: inline-block;
+    color: var(--text);
   }
   @keyframes scroll-left {
-    from{ transform: translateX(0); }
-    to  { transform: translateX(-50%); }
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
   }
-  .pin{
-    position:absolute;
-    width:14px;height:14px;border-radius:50%;
-    transform:translate(-50%,-50%);
+  .pin {
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
     background: linear-gradient(180deg,#ff8a00,#ff3d00);
     box-shadow: 0 6px 18px rgba(255,61,0,0.28);
-    border:2px solid rgba(255,255,255,0.06);
+    border: 2px solid rgba(255,255,255,0.06);
   }
-  .pin::after{
-    content:"";
-    position:absolute;
-    left:50%; top:50%;
-    transform:translate(-50%,-50%);
-    width:6px;height:6px;border-radius:50%;
-    background:#fff8;
+  .pin::after {
+    content: "";
+    position: absolute;
+    left: 50%; top: 50%;
+    transform: translate(-50%, -50%);
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: #fff8;
   }
-  .pin-label{
-    position:absolute;
-    font-size:12px;
-    color:var(--muted);
-    transform:translateX(-50%);
-    margin-top:10px;
-    white-space:nowrap;
+  .pin-label {
+    position: absolute;
+    font-size: 12px;
+    color: var(--muted);
+    transform: translateX(-50%);
+    margin-top: 10px;
+    white-space: nowrap;
     text-shadow: 0 2px 8px rgba(0,0,0,0.6);
   }
 </style>
 </head>
 <body>
 <div class="wrap">
-  <div class="map"></div>
+  <img src="https://upload.wikimedia.org/wikipedia/commons/8/80/World_map_-_low_resolution.svg" alt="World Map" class="map">
+  <div class="map-overlay"></div>
 
   <div class="screen">
     <div class="row">
@@ -145,7 +150,7 @@
     </div>
   </div>
 
-  <!-- Pins -->
+  <!-- Pins (coords fixed to map image) -->
   <div class="pin" style="left:46%; top:27%;"></div><div class="pin-label" style="left:46%; top:27%;">London</div>
   <div class="pin" style="left:29.4%; top:27.4%;"></div><div class="pin-label" style="left:29.4%; top:34%;">New York</div>
   <div class="pin" style="left:52.3%; top:41.6%;"></div><div class="pin-label" style="left:52.3%; top:48.2%;">Paris</div>
@@ -176,14 +181,13 @@ const messages = [
   "Billboard Nashville 15:20 - 18:50"
 ];
 
-// split into two halves
 const half = Math.ceil(messages.length / 2);
 const row1Msgs = messages.slice(0, half);
 const row2Msgs = messages.slice(half);
 
 function buildTickerLine(containerId, msgs) {
   const container = document.getElementById(containerId);
-  const allItems = [...msgs, ...msgs]; // duplicate for smooth loop
+  const allItems = [...msgs, ...msgs];
   allItems.forEach(msg => {
     const item = document.createElement('span');
     item.className = 'ticker-item';
